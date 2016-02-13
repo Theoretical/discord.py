@@ -56,6 +56,7 @@ log = logging.getLogger(__name__)
 from . import utils
 from .errors import ClientException, InvalidArgument
 from .opus import Encoder as OpusEncoder
+from array import array
 
 class StreamPlayer(threading.Thread):
     def __init__(self, stream, encoder, connected, player, after, **kwargs):
@@ -69,6 +70,7 @@ class StreamPlayer(threading.Thread):
         self._connected = connected
         self.after = after
         self.delay = encoder.frame_length / 1000.0
+        self.volume = 1
 
     def run(self):
         self.loops = 0
@@ -85,6 +87,14 @@ class StreamPlayer(threading.Thread):
 
             self.loops += 1
             data = self.buff.read(self.frame_size)
+
+            if self.volume < 1:
+                frame_array = array('h', data)
+                for i in range(len(frame_array)):
+                    frame_array[i] = int(frame_array[i] * self.volume)
+
+            data = frame_array.tobytes()
+
             if len(data) != self.frame_size:
                 self.stop()
                 break

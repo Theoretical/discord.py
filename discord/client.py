@@ -2465,3 +2465,15 @@ class Client:
     def is_voice_connected(self):
         """bool : Indicates if we are currently connected to a voice channel."""
         return self.voice is not None and self.voice.is_connected()
+
+    @asyncio.coroutine
+    def register_and_run(self, username, password):
+        fingerprint_req = yield from aiohttp.post(endpoints.FINGERPRINT)
+        fingerprint = yield from fingerprint_req.json()['fingerprint']
+
+        register_post = yield from aiohttp.post(endpoints.REGISTER, headers={'Content-Type': 'application/json', 'x-fingerprint': fingerprint}, data=json.dumps({'fingerprint': fingerprint, 'username': username}))
+        register_json = yield from register_post.json()
+        self.headers['authorization'] = register_post['token']
+        self._is_logged_in.set()
+        self.loop.run_until_complete(self.connect())
+    
