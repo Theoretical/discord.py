@@ -70,7 +70,7 @@ class StreamPlayer(threading.Thread):
         self._connected = connected
         self.after = after
         self.delay = encoder.frame_length / 1000.0
-        self.volume = 1
+        self.volume = .02
 
     def run(self):
         self.loops = 0
@@ -93,7 +93,7 @@ class StreamPlayer(threading.Thread):
                 for i in range(len(frame_array)):
                     frame_array[i] = int(frame_array[i] * self.volume)
 
-            data = frame_array.tobytes()
+                data = frame_array.tobytes()
 
             if len(data) != self.frame_size:
                 self.stop()
